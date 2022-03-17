@@ -144,7 +144,7 @@ const rollTreatWounds = async ({
 
   if (assurance) {
     const aroll = await new Roll(
-      `${med.modifiers.find((m) => m.type === 'proficiency').modifier} + 10`
+      `10 + ${med.modifiers.find((m) => m.type === 'proficiency').modifier}`
     ).roll({ async: true });
     ChatMessage.create({
       user: game.user.id,
@@ -503,9 +503,19 @@ if (token === undefined) {
       'Medicine is not trained and you do not possess a feat or feature to use another skill'
     );
   } else {
-    const { med } = token.actor.data.data.skills;
+    let bmtw_skill = 0
+    if (tmed && (checkItemTypeFeat('assurance', 'Assurance (Medicine)') ||
+     checkItemTypeFeat('assurance-medicine'))) {
+      bmtw_skill = token.actor.data.data.skills['med'];
+    } else if (hasChirurgeon && (checkItemTypeFeat('assurance', 'Assurance (Crafting)') ||
+     checkItemTypeFeat('assurance-crafting'))) {
+      bmtw_skill = token.actor.data.data.skills['cra'];
+    } else if (hasNaturalMedicine && (checkItemTypeFeat('assurance', 'Assurance (Nature)') ||
+     checkItemTypeFeat('assurance-nature'))) {
+      bmtw_skill = token.actor.data.data.skills['nat'];
+    } 
     const level = token.actor.data.data.details.level.value;
-    const totalAssurance = 10 + (med.rank * 2 + level);
+    const totalAssurance = 10 + (bmtw_skill.rank * 2 + level);
     const dialog = new Dialog({
       title: 'Treat Wounds',
       content: renderDialogContent({
