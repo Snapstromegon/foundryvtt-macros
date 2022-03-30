@@ -89,7 +89,8 @@ const getHealSuccess = ({
         healFormula = hasMagicHands ? `32${bonusString}` : `4d8${bonusString}`;
         successLabel = 'Success with risky surgery';
       } else if (useMortalHealing) {
-        healFormula = hasMagicHands ? `16${bonusString}` : `4d8${bonusString}`;
+        // Mortal Healing (can't have a deity) + Magic Hands (must have a deity) is not possible.
+        healFormula = `4d8${bonusString}`;
         successLabel = 'Success with mortal healing';
       } else {
         healFormula = hasMagicHands ? `16${bonusString}` : `2d8${bonusString}`;
