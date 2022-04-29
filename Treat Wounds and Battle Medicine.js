@@ -61,7 +61,7 @@ const getRollOptions = ({ isRiskySurgery } = {}) => [
  *
  * @param {Object} options
  * @param {0|1|2|3} options.success Level of success
- * @param {boolean} options.hasMagicHands Actor has the feat magic-hands
+ * @param {boolean} options.useMagicHands Actor uses the feat magic-hands
  * @param {boolean} options.useMortalHealing Actor uses the feat mortal healing
  * @param {boolean} options.isRiskySurgery Actor uses the feat risky surgery 
  * @param {string} options.bonusString Bonus String for this throw
@@ -69,7 +69,7 @@ const getRollOptions = ({ isRiskySurgery } = {}) => [
  */
 const getHealSuccess = ({
   success,
-  hasMagicHands,
+  useMagicHands,
   useMortalHealing,
   isRiskySurgery,
   bonusString,
@@ -86,19 +86,19 @@ const getHealSuccess = ({
       break;
     case 2:
       if (isRiskySurgery) {
-        healFormula = hasMagicHands ? `32${bonusString}` : `4d8${bonusString}`;
+        healFormula = useMagicHands ? `32${bonusString}` : `4d8${bonusString}`;
         successLabel = 'Success with risky surgery';
       } else if (useMortalHealing) {
         // Mortal Healing (can't have a deity) + Magic Hands (must have a deity) is not possible.
         healFormula = `4d8${bonusString}`;
         successLabel = 'Success with mortal healing';
       } else {
-        healFormula = hasMagicHands ? `16${bonusString}` : `2d8${bonusString}`;
+        healFormula = useMagicHands ? `16${bonusString}` : `2d8${bonusString}`;
         successLabel = 'Success';
       }
       break;
     case 3:
-      healFormula = hasMagicHands ? `32${bonusString}` : `4d8${bonusString}`;
+      healFormula = useMagicHands ? `32${bonusString}` : `4d8${bonusString}`;
       successLabel = 'Critical Success';
       break;
     default:
@@ -128,6 +128,7 @@ const rollTreatWounds = async ({
   med,
   isRiskySurgery,
   useMortalHealing,
+  useMagicHands,
   assurance,
   bmtw,
 }) => {
@@ -141,7 +142,6 @@ const rollTreatWounds = async ({
     };
   }
 
-  const hasMagicHands = checkFeat('magic-hands');
   const bonusString = bonus > 0 ? ` + ${bonus}` : '';
 
   if (assurance) {
@@ -164,7 +164,7 @@ const rollTreatWounds = async ({
 
     const { healFormula, successLabel } = getHealSuccess({
       success,
-      hasMagicHands,
+      useMagicHands,
       useMortalHealing,
       isRiskySurgery,
       bonusString,
@@ -200,7 +200,7 @@ const rollTreatWounds = async ({
       callback: async (roll) => {
         const { healFormula, successLabel } = getHealSuccess({
           success: roll.data.degreeOfSuccess,
-          hasMagicHands,
+          useMagicHands,
           useMortalHealing,
           isRiskySurgery,
           bonusString,
@@ -255,6 +255,9 @@ async function applyChanges($html) {
     // Mortal Healing does not apply when Battle Medicine is used.
     const useMortalHealing = !useBattleMedicine && 
       $html.find('[name="mortal_healing_bool"]')[0]?.checked;
+    // Magic Hands do not apply when Battle Medicine is used.
+    const useMagicHands = !useBattleMedicine &&
+      checkFeat('magic-hands');
     const hasGodlessHealing = $html.find('[name="godless_healing_bool"]')[0]
       ?.checked;
     const forensicMedicine = checkFeat('forensic-medicine-methodology');
@@ -313,6 +316,7 @@ async function applyChanges($html) {
           med,
           isRiskySurgery,
           useMortalHealing,
+          useMagicHands,
           assurance,
           bmtw,
         });
@@ -324,6 +328,7 @@ async function applyChanges($html) {
           med,
           isRiskySurgery,
           useMortalHealing,
+          useMagicHands,
           assurance,
           bmtw,
         });
@@ -335,6 +340,7 @@ async function applyChanges($html) {
           med,
           isRiskySurgery,
           useMortalHealing,
+          useMagicHands,
           assurance,
           bmtw,
         });
@@ -346,6 +352,7 @@ async function applyChanges($html) {
           med,
           isRiskySurgery,
           useMortalHealing,
+          useMagicHands,
           assurance,
           bmtw,
         });
