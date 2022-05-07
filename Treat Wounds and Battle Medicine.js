@@ -123,7 +123,7 @@ const getHealSuccess = ({
  * @param {number} options.bmtw bmtw
  * @param {Object} options.target current target
  * @param {Object} options.immunityEffect the immunity effect  
- * @param {string} options.immunityEffectLink the immunity effect Link
+ * @param {string} options.immunityMacroLink the immunity Macro Link
  */
 const rollTreatWounds = async ({
   DC,
@@ -136,7 +136,7 @@ const rollTreatWounds = async ({
   bmtw,
   target,
   immunityEffect,
-  immunityEffectLink,
+  immunityMacroLink,
 }) => {
   const dc = {
     value: DC,
@@ -149,8 +149,7 @@ const rollTreatWounds = async ({
   }
 
   const bonusString = bonus > 0 ? ` + ${bonus}` : '';
-  enrichedLink = TextEditor.enrichHTML(immunityEffectLink);
-  const immunityMessage = `${target.name} is now immune to ${bmtw} by ${token.name} for ${immunityEffect.data.duration.value} ${immunityEffect.data.duration.unit}.<br>${enrichedLink}`;
+  const immunityMessage = `${target.name} is now immune to ${bmtw} by ${token.name} for ${immunityEffect.data.duration.value} ${immunityEffect.data.duration.unit}.<br>${immunityMacroLink}`;
 
   if (assurance) {
     const aroll = await new Roll(
@@ -285,8 +284,15 @@ async function applyChanges($html) {
     const bmUUID = 'Compendium.pf2e.feature-effects.2XEYQNZTCGpdkyR6';
     const twUUID = 'Compendium.pf2e.feature-effects.Lb4q2bBAgxamtix5';
     const immunityEffectUUID = useBattleMedicine ? bmUUID : twUUID;
-    // const immunityEffectLink = useBattleMedicine ? `@Compendium[pf2e.feature-effects.2XEYQNZTCGpdkyR6]{Effect: Battle asdfsadfMedicine Immunity}`: `@Compendium[pf2e.feature-effects.Lb4q2bBAgxamtix5]{Effect: Treat asdfasdfWounds Immunity}`;
-    const immunityEffectLink = useBattleMedicine ? `@Macro[Vjc2pkbIROpXBicQ]{BM Immunity CD}`: `@Macro[kISEVzMq8beHqIM5]{TW Immunity CD}`;
+    let immunityMacroLink = ``;
+    if (game.modules.has('xdy-pf2e-workbench') && game.modules.get('xdy-pf2e-workbench').active) { 
+      // Extract the Macro ID from the asynomous benefactor macro compendium.
+      const macroName = useBattleMedicine ? `BM Immunity CD`: `TW Immunity CD`;
+      const macroId = (await game.packs.get('xdy-pf2e-workbench.asymonous-benefactor-macros')).index.find(n => n.name === macroName)?._id;
+      immunityMacroLink = TextEditor.enrichHTML(`@Compendium[xdy-pf2e-workbench.asymonous-benefactor-macros.${macroId}]{Apply ${bmtw} Immunity Cooldown}`);
+    } else {
+      ui.notifications.warn(`Workbench Module not active! Linking Immunity effect Macro not possible.`);
+    }
     const hasGodlessHealing = $html.find('[name="godless_healing_bool"]')[0]
       ?.checked;
     const forensicMedicine = checkFeat('forensic-medicine-methodology');
@@ -400,7 +406,7 @@ async function applyChanges($html) {
             bmtw,
             target,
             immunityEffect,
-            immunityEffectLink,
+            immunityMacroLink,
           });
           break;
         case 2:
@@ -415,7 +421,7 @@ async function applyChanges($html) {
             bmtw,
             target,
             immunityEffect,  
-            immunityEffectLink,
+            immunityMacroLink,
           });
           break;
         case 3:
@@ -430,7 +436,7 @@ async function applyChanges($html) {
             bmtw,
             target,
             immunityEffect,
-            immunityEffectLink,
+            immunityMacroLink,
           });
           break;
         case 4:
@@ -445,7 +451,7 @@ async function applyChanges($html) {
             bmtw,
             target,
             immunityEffect,
-            immunityEffectLink,
+            immunityMacroLink,
           });
           break;
         default:
